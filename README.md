@@ -3,7 +3,7 @@
 A sleek GitHub profile analyzer built with vanilla HTML, CSS, and JavaScript. Search any GitHub username to instantly see their stats, top languages, and best repositories.
 
 ## 🔗 Live Demo
-https://devpulse-1dcgrc2f8-raunak-cybersecs-projects.vercel.app/
+(https://devpulse-czgowgusu-raunak-cybersecs-projects.vercel.app/)
 ## 📸 Preview
 
 ![DevPulse Preview](preview.png)
