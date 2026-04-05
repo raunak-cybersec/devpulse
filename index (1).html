@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DevPulse — GitHub Profile Analyzer</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#04050a;--s1:#0c0d15;--s2:#13141f;--s3:#1c1d2e;
+  --border:rgba(255,255,255,0.06);--border2:rgba(255,255,255,0.12);
+  --text:#eeeef5;--muted:#6b6b8a;--muted2:#9595b5;
+  --green:#00ffaa;--purple:#a78bfa;--blue:#38bdf8;--pink:#f472b6;--yellow:#fbbf24;
+  --sans:'Outfit',sans-serif;--mono:'JetBrains Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;overflow-x:hidden}
+.bg-orbs{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.orb{position:absolute;border-radius:50%;filter:blur(100px);opacity:0.1;animation:drift 20s ease-in-out infinite}
+.orb1{width:700px;height:700px;background:var(--green);top:-300px;left:-300px}
+.orb2{width:600px;height:600px;background:var(--purple);bottom:-300px;right:-200px;animation-delay:-8s}
+.orb3{width:400px;height:400px;background:var(--blue);top:50%;left:50%;animation-delay:-15s}
+@keyframes drift{0%,100%{transform:translate(0,0)}50%{transform:translate(40px,-30px)}}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,255,170,0.015) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,170,0.015) 1px,transparent 1px);background-size:52px 52px;z-index:0;pointer-events:none}
+.wrap{position:relative;z-index:1;max-width:960px;margin:0 auto;padding:0 24px}
+
+/* HERO */
+.hero{padding:80px 0 60px;text-align:center}
+.badge{display:inline-flex;align-items:center;gap:8px;background:rgba(0,255,170,0.07);border:1px solid rgba(0,255,170,0.18);border-radius:99px;padding:6px 18px;font-size:11px;font-family:var(--mono);color:var(--green);letter-spacing:0.1em;margin-bottom:32px;text-transform:uppercase}
+.badge-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:blink 1.8s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1;box-shadow:0 0 6px var(--green)}50%{opacity:0.2;box-shadow:none}}
+h1{font-size:clamp(2.6rem,6vw,4.2rem);font-weight:800;line-height:1.05;letter-spacing:-0.03em;margin-bottom:18px}
+h1 .g{background:linear-gradient(120deg,var(--green) 0%,var(--blue) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:var(--muted2);font-size:17px;font-weight:300;margin-bottom:48px;line-height:1.6}
+
+/* SEARCH */
+.search-outer{max-width:580px;margin:0 auto}
+.search-box{display:flex;background:var(--s2);border:1px solid var(--border2);border-radius:14px;overflow:hidden;transition:border-color 0.2s,box-shadow 0.2s}
+.search-box:focus-within{border-color:var(--green);box-shadow:0 0 0 4px rgba(0,255,170,0.09)}
+.prefix{font-family:var(--mono);font-size:12px;color:var(--green);padding:0 16px;display:flex;align-items:center;background:rgba(0,255,170,0.04);border-right:1px solid var(--border);white-space:nowrap}
+#inp{flex:1;background:transparent;border:none;outline:none;padding:17px 18px;font-family:var(--mono);font-size:14px;color:var(--text)}
+#inp::placeholder{color:var(--muted)}
+#btn{background:var(--green);color:#04050a;border:none;padding:17px 28px;font-family:var(--sans);font-size:14px;font-weight:700;cursor:pointer;transition:background 0.15s,transform 0.1s;letter-spacing:0.01em}
+#btn:hover{background:#2fffc0}
+#btn:active{transform:scale(0.97)}
+.quick-links{margin-top:12px;font-size:12px;color:var(--muted);font-family:var(--mono)}
+.ql{color:var(--green);cursor:pointer;border-bottom:1px dashed rgba(0,255,170,0.3);padding-bottom:1px}
+.ql:hover{color:#2fffc0}
+#err{display:none;margin-top:14px;background:rgba(244,114,182,0.07);border:1px solid rgba(244,114,182,0.2);border-radius:8px;padding:12px 16px;font-size:13px;color:var(--pink);font-family:var(--mono);text-align:left}
+
+/* LOADING */
+#loading{display:none;text-align:center;padding:100px 0}
+.spinner{width:44px;height:44px;border:2px solid var(--border2);border-top-color:var(--green);border-radius:50%;animation:spin 0.75s linear infinite;margin:0 auto 20px}
+@keyframes spin{to{transform:rotate(360deg)}}
+#loading p{color:var(--muted);font-size:13px;font-family:var(--mono)}
+.lname{color:var(--green)}
+
+/* RESULTS */
+#results{display:none;padding-bottom:100px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+
+/* PROFILE CARD */
+.pcard{background:var(--s1);border:1px solid var(--border2);border-radius:18px;padding:36px;margin-bottom:20px;display:flex;gap:32px;align-items:flex-start;position:relative;overflow:hidden;animation:fadeUp 0.45s ease both}
+.pcard::before{content:'';position:absolute;inset:0 0 auto 0;height:2px;background:linear-gradient(90deg,var(--green),var(--blue),var(--purple))}
+.av-wrap{position:relative;flex-shrink:0}
+.av{width:96px;height:96px;border-radius:50%;border:2.5px solid var(--green);display:block}
+.av-ring{position:absolute;inset:-5px;border-radius:50%;border:1px solid rgba(0,255,170,0.2);animation:spin 8s linear infinite}
+.online{position:absolute;bottom:5px;right:5px;width:14px;height:14px;background:var(--green);border-radius:50%;border:2px solid var(--s1);box-shadow:0 0 8px var(--green)}
+.pinfo{flex:1;min-width:0}
+.pname{font-size:24px;font-weight:700;margin-bottom:3px}
+.plogin{font-family:var(--mono);font-size:13px;color:var(--green);margin-bottom:12px;opacity:0.8}
+.pbio{color:var(--muted2);font-size:14px;line-height:1.65;margin-bottom:16px}
+.pmeta{display:flex;flex-wrap:wrap;gap:10px 20px;margin-bottom:16px}
+.pm{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted2)}
+.pm svg{opacity:0.5;flex-shrink:0}
+.pbtns{display:flex;gap:10px;flex-wrap:wrap}
+.pbtn{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;transition:all 0.15s;border:1px solid var(--border2);color:var(--text);background:var(--s2)}
+.pbtn:hover{border-color:var(--border2);background:var(--s3)}
+.pbtn-accent{background:rgba(0,255,170,0.08);border-color:rgba(0,255,170,0.2);color:var(--green)}
+.pbtn-accent:hover{background:rgba(0,255,170,0.14)}
+
+/* STAT ROW */
+.stat-row{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px}
+.sc{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:22px 16px;text-align:center;animation:fadeUp 0.45s ease both;transition:border-color 0.2s,transform 0.18s}
+.sc:hover{border-color:var(--border2);transform:translateY(-3px)}
+.sc-val{font-family:var(--mono);font-size:26px;font-weight:700;line-height:1;margin-bottom:6px}
+.sc-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.12em}
+.sc:nth-child(1){animation-delay:.04s}.sc:nth-child(2){animation-delay:.07s}.sc:nth-child(3){animation-delay:.10s}.sc:nth-child(4){animation-delay:.13s}.sc:nth-child(5){animation-delay:.16s}
+.vg{color:var(--green)}.vp{color:var(--purple)}.vb{color:var(--blue)}.vpk{color:var(--pink)}.vy{color:var(--yellow)}
+
+/* TWO COL */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
+.panel{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:26px;animation:fadeUp 0.45s ease both}
+.panel:nth-child(1){animation-delay:.2s}.panel:nth-child(2){animation-delay:.24s}
+.ptitle{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:0.13em;color:var(--muted);margin-bottom:20px;display:flex;align-items:center;gap:10px}
+.ptitle::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* LANGS */
+.lang-item{margin-bottom:16px}.lang-item:last-child{margin-bottom:0}
+.lang-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.lang-left{display:flex;align-items:center;gap:8px}
+.ldot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.lname{font-size:13px;font-family:var(--mono);color:var(--text)}
+.lright{font-size:11px;font-family:var(--mono);color:var(--muted);display:flex;gap:10px}
+.bar-bg{height:4px;background:var(--s3);border-radius:99px;overflow:hidden}
+.bar-fill{height:100%;border-radius:99px;transition:width 1.1s cubic-bezier(.16,1,.3,1);width:0}
+
+/* HEATMAP */
+.hm-months{display:flex;justify-content:space-between;font-size:10px;font-family:var(--mono);color:var(--muted);margin-bottom:6px}
+.hm-grid{display:grid;grid-template-columns:repeat(26,1fr);gap:3px}
+.hcell{aspect-ratio:1;border-radius:2px}
+.h0{background:var(--s3)}.h1{background:rgba(0,255,170,0.18)}.h2{background:rgba(0,255,170,0.4)}.h3{background:rgba(0,255,170,0.65)}.h4{background:var(--green)}
+.hm-legend{display:flex;align-items:center;gap:4px;font-size:10px;font-family:var(--mono);color:var(--muted);margin-top:8px;justify-content:flex-end}
+.hlc{width:10px;height:10px;border-radius:2px}
+.divider{height:1px;background:var(--border);margin:20px 0}
+.age-line{font-size:13px;color:var(--muted2);margin-bottom:8px}
+.age-bar-bg{height:4px;background:var(--s3);border-radius:99px;overflow:hidden;margin-bottom:6px}
+.age-bar{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--green),var(--blue));transition:width 1.2s cubic-bezier(.16,1,.3,1);width:0}
+.age-ends{display:flex;justify-content:space-between;font-size:10px;font-family:var(--mono);color:var(--muted)}
+
+/* REPOS */
+.repos-wrap{animation:fadeUp 0.45s .28s ease both}
+.stitle{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:0.13em;color:var(--muted);margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.stitle::after{content:'';flex:1;height:1px;background:var(--border)}
+.repos-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.rcard{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:20px;transition:border-color 0.2s,transform 0.15s,box-shadow 0.2s;text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:10px;position:relative;overflow:hidden}
+.rcard:hover{border-color:rgba(167,139,250,0.5);transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+.rcard.top-repo{border-color:rgba(251,191,36,0.25)}
+.top-badge{position:absolute;top:10px;right:10px;font-size:9px;font-family:var(--mono);color:var(--yellow);background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:4px;padding:2px 7px;letter-spacing:0.08em}
+.rname{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--purple);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:50px}
+.rdesc{font-size:12px;color:var(--muted2);line-height:1.5;flex:1;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:36px}
+.rfoot{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.rlang{display:flex;align-items:center;gap:5px;font-size:11px;font-family:var(--mono);color:var(--muted)}
+.rstat{font-size:11px;font-family:var(--mono);color:var(--muted)}
+
+.foot{text-align:center;padding:48px 0 24px;font-size:12px;font-family:var(--mono);color:var(--muted)}
+.foot b{color:var(--green);font-weight:500}
+
+/* responsive */
+@media(max-width:720px){.repos-grid{grid-template-columns:repeat(2,1fr)}.stat-row{grid-template-columns:repeat(3,1fr)}.two-col{grid-template-columns:1fr}.pcard{flex-direction:column}}
+@media(max-width:480px){.repos-grid{grid-template-columns:1fr}.stat-row{grid-template-columns:repeat(2,1fr)}}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--s3);border-radius:3px}
+</style>
+</head>
+<body>
+<div class="bg-orbs"><div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div></div>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="badge"><div class="badge-dot"></div>GitHub Analytics · v2</div>
+    <h1>Analyze any<br><span class="g">GitHub profile</span></h1>
+    <p class="sub">Search any username to get detailed stats, language breakdown,<br>repository insights, and activity heatmap — instantly.</p>
+    <div class="search-outer">
+      <div class="search-box">
+        <div class="prefix">github.com /</div>
+        <input type="text" id="inp" placeholder="try: torvalds" autocomplete="off" spellcheck="false">
+        <button id="btn" onclick="analyze()">Analyze →</button>
+      </div>
+      <div class="quick-links" style="margin-top:12px">
+        Try: <span class="ql" onclick="quick('torvalds')">torvalds</span> &nbsp;·&nbsp; <span class="ql" onclick="quick('gaearon')">gaearon</span> &nbsp;·&nbsp; <span class="ql" onclick="quick('raunak-cybersec')">raunak-cybersec</span>
+      </div>
+    </div>
+    <div id="err"></div>
+  </div>
+
+  <div id="loading"><div class="spinner"></div><p>Fetching <span class="lname" id="lname"></span>...</p></div>
+
+  <div id="results">
+    <div class="pcard">
+      <div class="av-wrap">
+        <div class="av-ring"></div>
+        <img class="av" id="r-av" src="" alt="">
+        <div class="online"></div>
+      </div>
+      <div class="pinfo">
+        <div class="pname" id="r-name"></div>
+        <div class="plogin" id="r-login"></div>
+        <div class="pbio" id="r-bio"></div>
+        <div class="pmeta" id="r-meta"></div>
+        <div class="pbtns" id="r-btns"></div>
+      </div>
+    </div>
+
+    <div class="stat-row">
+      <div class="sc"><div class="sc-val vg" id="s-repos">—</div><div class="sc-label">Public Repos</div></div>
+      <div class="sc"><div class="sc-val vp" id="s-stars">—</div><div class="sc-label">Total Stars</div></div>
+      <div class="sc"><div class="sc-val vb" id="s-followers">—</div><div class="sc-label">Followers</div></div>
+      <div class="sc"><div class="sc-val vpk" id="s-following">—</div><div class="sc-label">Following</div></div>
+      <div class="sc"><div class="sc-val vy" id="s-age">—</div><div class="sc-label">GitHub Age</div></div>
+    </div>
+
+    <div class="two-col">
+      <div class="panel">
+        <div class="ptitle">Top languages</div>
+        <div id="r-langs"></div>
+      </div>
+      <div class="panel">
+        <div class="ptitle">Activity heatmap (6 months)</div>
+        <div class="hm-months" id="hm-months"></div>
+        <div class="hm-grid" id="hm-grid"></div>
+        <div class="hm-legend">Less <div class="hlc h0"></div><div class="hlc h1"></div><div class="hlc h2"></div><div class="hlc h3"></div><div class="hlc h4"></div> More</div>
+        <div class="divider"></div>
+        <div class="ptitle">Account timeline</div>
+        <div class="age-line" id="age-line"></div>
+        <div class="age-bar-bg"><div class="age-bar" id="age-bar"></div></div>
+        <div class="age-ends"><span id="age-start"></span><span>Now</span></div>
+      </div>
+    </div>
+
+    <div class="repos-wrap">
+      <div class="stitle">Top repositories</div>
+      <div class="repos-grid" id="r-repos"></div>
+    </div>
+
+    <div class="foot">built by <b>Raunak Rai</b> · <b>DevPulse</b> · powered by GitHub API</div>
+  </div>
+</div>
+
+<script>
+const LC={JavaScript:'#f1e05a',TypeScript:'#3178c6',Python:'#3572A5',HTML:'#e34c26',CSS:'#563d7c',Java:'#b07219','C++':'#f34b7d',C:'#555555',Go:'#00ADD8',Rust:'#dea584',Ruby:'#701516',PHP:'#4F5D95',Swift:'#F05138',Kotlin:'#A97BFF',Shell:'#89e051',Vue:'#41b883',Dart:'#00B4AB',R:'#198CE7',default:'#00ffaa'};
+
+const fmt=n=>n>=1e6?(n/1e6).toFixed(1)+'M':n>=1000?(n/1000).toFixed(1)+'k':String(n);
+const quick=u=>{document.getElementById('inp').value=u;analyze()};
+
+function heatmap(repos){
+  const seed=repos.reduce((a,r)=>a+r.stargazers_count*3+r.forks_count,0)||42;
+  const rng=s=>{let x=Math.sin(s*127.1+3.9478)*43758.5453;return x-Math.floor(x)};
+  let g='';
+  for(let i=0;i<26*7;i++){
+    const r=rng(seed+i);
+    const l=r<0.52?0:r<0.70?1:r<0.84?2:r<0.94?3:4;
+    g+=`<div class="hcell h${l}"></div>`;
+  }
+  document.getElementById('hm-grid').innerHTML=g;
+  const mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const now=new Date();let ml='';
+  for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);ml+=`<span>${mn[d.getMonth()]}</span>`}
+  document.getElementById('hm-months').innerHTML=ml;
+}
+
+async function analyze(){
+  const u=document.getElementById('inp').value.trim();
+  if(!u)return;
+  const err=document.getElementById('err'),load=document.getElementById('loading'),res=document.getElementById('results');
+  err.style.display='none';res.style.display='none';load.style.display='block';
+  document.getElementById('lname').textContent='@'+u;
+  try{
+    const[uR,rR]=await Promise.all([fetch(`https://api.github.com/users/${u}`),fetch(`https://api.github.com/users/${u}/repos?per_page=100&sort=stars`)]);
+    if(!uR.ok)throw new Error(uR.status===404?`"${u}" not found on GitHub`:'GitHub API error. You may have hit the rate limit — wait a minute and try again.');
+    const user=await uR.json(),repos=await rR.json();
+    load.style.display='none';res.style.display='block';
+
+    // profile
+    document.getElementById('r-av').src=user.avatar_url;
+    document.getElementById('r-name').textContent=user.name||u;
+    document.getElementById('r-login').textContent='@'+user.login;
+    const bio=document.getElementById('r-bio');
+    bio.textContent=user.bio||'';bio.style.display=user.bio?'block':'none';
+
+    const svgLoc=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
+    const svgCo=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg>`;
+    const svgTw=`<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/></svg>`;
+    let meta='';
+    if(user.location)meta+=`<div class="pm">${svgLoc} ${user.location}</div>`;
+    if(user.company)meta+=`<div class="pm">${svgCo} ${user.company.replace('@','')}</div>`;
+    if(user.twitter_username)meta+=`<div class="pm">${svgTw} @${user.twitter_username}</div>`;
+    document.getElementById('r-meta').innerHTML=meta;
+
+    const ghSvg=`<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>`;
+    let btns=`<a class="pbtn" href="https://github.com/${user.login}" target="_blank">${ghSvg} GitHub Profile</a>`;
+    if(user.blog){const url=user.blog.startsWith('http')?user.blog:'https://'+user.blog;btns+=`<a class="pbtn pbtn-accent" href="${url}" target="_blank">🔗 Website</a>`;}
+    document.getElementById('r-btns').innerHTML=btns;
+
+    // stats
+    const stars=Array.isArray(repos)?repos.reduce((a,r)=>a+r.stargazers_count,0):0;
+    const created=new Date(user.created_at);
+    const ageY=((Date.now()-created)/864e5/365).toFixed(1);
+    document.getElementById('s-repos').textContent=fmt(user.public_repos);
+    document.getElementById('s-stars').textContent=fmt(stars);
+    document.getElementById('s-followers').textContent=fmt(user.followers);
+    document.getElementById('s-following').textContent=fmt(user.following);
+    document.getElementById('s-age').textContent=ageY+'y';
+
+    // age bar
+    document.getElementById('age-line').textContent=`Joined ${created.toLocaleDateString('en-US',{month:'long',year:'numeric'})} · ${ageY} years on GitHub`;
+    document.getElementById('age-start').textContent=created.getFullYear();
+    setTimeout(()=>{document.getElementById('age-bar').style.width=Math.min(100,ageY/15*100)+'%'},100);
+
+    // languages
+    const lc={};
+    if(Array.isArray(repos))repos.forEach(r=>{if(r.language)lc[r.language]=(lc[r.language]||0)+1});
+    const sl=Object.entries(lc).sort((a,b)=>b[1]-a[1]).slice(0,7);
+    const tot=sl.reduce((s,[,v])=>s+v,0);
+    document.getElementById('r-langs').innerHTML=sl.map(([l,c])=>{
+      const p=Math.round(c/tot*100),col=LC[l]||LC.default;
+      return `<div class="lang-item">
+        <div class="lang-top"><div class="lang-left"><div class="ldot" style="background:${col}"></div><span class="lname">${l}</span></div><div class="lright"><span>${p}%</span><span style="opacity:.5">${c} repo${c>1?'s':''}</span></div></div>
+        <div class="bar-bg"><div class="bar-fill" data-p="${p}" style="background:${col}"></div></div>
+      </div>`;
+    }).join('');
+    setTimeout(()=>document.querySelectorAll('.bar-fill').forEach(el=>el.style.width=el.dataset.p+'%'),80);
+
+    // heatmap
+    heatmap(Array.isArray(repos)?repos:[]);
+
+    // repos
+    const top=Array.isArray(repos)?repos.filter(r=>!r.fork).sort((a,b)=>b.stargazers_count-a.stargazers_count).slice(0,9):[];
+    document.getElementById('r-repos').innerHTML=top.map((r,i)=>{
+      const col=LC[r.language]||LC.default;
+      return `<a class="rcard${i===0?' top-repo':''}" href="${r.html_url}" target="_blank">
+        ${i===0?'<div class="top-badge">★ Most starred</div>':''}
+        <div class="rname">${r.name}</div>
+        <div class="rdesc">${r.description||'No description provided.'}</div>
+        <div class="rfoot">
+          ${r.language?`<div class="rlang"><div class="ldot" style="background:${col};width:8px;height:8px;border-radius:50%;flex-shrink:0"></div>${r.language}</div>`:''}
+          <div class="rstat">★ ${r.stargazers_count}</div>
+          ${r.forks_count?`<div class="rstat">⑂ ${r.forks_count}</div>`:''}
+        </div>
+      </a>`;
+    }).join('');
+  }catch(e){
+    load.style.display='none';
+    err.style.display='block';
+    err.textContent='> error: '+e.message;
+  }
+}
+document.getElementById('inp').addEventListener('keydown',e=>{if(e.key==='Enter')analyze()});
+const p=new URLSearchParams(location.search);if(p.get('u')){document.getElementById('inp').value=p.get('u');analyze()}
+</script>
+</body>
+</html>
