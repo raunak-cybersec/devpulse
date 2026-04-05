@@ -4,7 +4,7 @@ A sleek GitHub profile analyzer built with vanilla HTML, CSS, and JavaScript. Se
 
 ## 🔗 Live Demo
 
-[devpulse.vercel.app](https://devpulse.vercel.app) <!-- Replace after deploying on Vercel -->
+[devpulse.vercel.app]([https://devpulse.vercel.app](https://devpulse-1dcgrc2f8-raunak-cybersecs-projects.vercel.app/)) <!-- Replace after deploying on Vercel -->
 
 ## 📸 Preview
 
